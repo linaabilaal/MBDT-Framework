@@ -1,11 +1,574 @@
-<!doctype html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <title>DT-Framework</title>
-  </head>
-  <body>
-    <h1>DT Use Cases</h1>
-    <p>UC0: VGR</p>
-  </body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Digital Twin Use Cases</title>
+  <style>
+    :root{
+      --bg:#f6f8fb; --surface:#ffffff; --ink:#0f172a; --muted:#5b677c; --border:#e2e8f0;
+      --accent:#6b7dff; --accent-quiet:#eef2ff; --ring:rgba(107,125,255,.22);
+      --shadow-sm:0 1px 2px rgba(2,6,23,.06); --shadow-md:0 10px 30px rgba(2,6,23,.08);
+      --radius:14px; --radius-lg:16px; --container:1200px;
+      --space-1:6px; --space-2:10px; --space-3:14px; --space-4:18px; --space-5:22px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0; font-family:ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; color:var(--ink); background:var(--bg); -webkit-font-smoothing:antialiased}
+    h1,h2,h3{margin:0; letter-spacing:-.01em}
+    h1{font-weight:800; font-size:clamp(22px,3.2vw,28px)}
+    h2{font-weight:750; font-size:18px}
+    h3{font-weight:700; font-size:15px}
+    p{margin:0}
+    a{color:inherit; text-decoration:none}
+
+    /* Layout */
+    .shell{max-width:var(--container); margin:0 auto; display:grid; grid-template-columns:280px 1fr; gap:var(--space-4); padding:var(--space-4)}
+    header.site{position:sticky; top:0; z-index:50; backdrop-filter:blur(6px); background:color-mix(in oklab, var(--surface) 92%, transparent); border-bottom:1px solid var(--border)}
+    .head{max-width:var(--container); margin:0 auto; padding:var(--space-3) var(--space-4)}
+    .title{font-weight:800; font-size:clamp(20px,3vw,26px)}
+    .subtitle{color:var(--muted); margin-top:6px; font-size:14px}
+
+    /* Sidebar (vertical tabs) */
+    .side{position:sticky; top:88px; align-self:start; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); box-shadow:var(--shadow-sm)}
+    .usecase-list{list-style:none; padding:8px; margin:0}
+    .usecase-item{margin:4px 0}
+    .usecase-btn{width:100%; display:flex; align-items:center; gap:10px; padding:10px 12px; border:1px solid transparent; background:transparent; color:var(--ink); border-radius:10px; cursor:pointer; font-weight:700}
+    .usecase-btn:hover{background:color-mix(in oklab, var(--surface) 90%, var(--bg) 10%)}
+    .usecase-btn[aria-current="true"]{background:var(--surface); border-color:color-mix(in oklab, var(--border) 60%, var(--accent) 40%); box-shadow:var(--shadow-sm)}
+    .dot{width:8px; height:8px; border-radius:999px; background:var(--accent)}
+
+    /* Hero banner */
+    .hero{background:var(--surface); border:1px solid var(--border); border-radius:12px; overflow:hidden; box-shadow:var(--shadow-sm)}
+    .hero-img{display:block; width:100%; max-height:360px; object-fit:contain; background:var(--surface)}
+
+    /* Section blocks */
+    .section{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); overflow:hidden; margin-top:var(--space-4); box-shadow:var(--shadow-sm)}
+    .section-header{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:12px 14px; border-bottom:1px solid var(--border); background:color-mix(in oklab, var(--surface) 96%, var(--bg) 4%)}
+    .section-header h2>a{border-bottom:1px dashed transparent}
+    .section-header h2>a:focus-visible, .section-header h2>a:hover{border-bottom-color:var(--accent)}
+
+    /* Subheaders with info tooltip */
+    .sub{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:12px 14px; border-bottom:1px solid var(--border); background:var(--surface)}
+    .sub-left{display:flex; align-items:center; gap:10px}
+    .info-btn{display:inline-flex; align-items:center; gap:6px; padding:6px 8px; font-size:12px; border:1px solid var(--border); background:color-mix(in oklab,var(--surface) 88%, var(--bg) 12%); color:var(--ink); border-radius:999px; cursor:pointer; position:relative}
+    .info-btn:hover{background:color-mix(in oklab,var(--surface) 82%, var(--bg) 18%)}
+    .info-btn:focus-visible{outline:none; box-shadow:0 0 0 3px var(--accent-quiet),0 0 0 1px var(--accent)}
+    .info-btn .icon{width:16px; height:16px}
+    .tooltip{position:absolute; top:calc(100% + 8px); right:0; min-width:260px; max-width:360px; padding:10px 12px; border:1px solid var(--border); background:color-mix(in oklab,var(--surface) 96%, var(--bg) 4%); color:var(--ink); border-radius:10px; box-shadow:var(--shadow-md); font-size:13.5px; line-height:1.45; z-index:40; display:none}
+    .tooltip[aria-hidden="false"]{display:block}
+    .tooltip p{margin:0; color:var(--muted)}
+    .tooltip::after{content:""; position:absolute; top:-6px; right:14px; border-width:6px; border-style:solid; border-color:transparent transparent color-mix(in oklab,var(--surface) 96%, var(--bg) 4%) transparent}
+    .tooltip::before{content:""; position:absolute; top:-7px; right:14px; border-width:7px; border-style:solid; border-color:transparent transparent var(--border) transparent}
+
+    /* Grid of figures */
+    .grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(280px,1fr)); gap:var(--space-3); padding:var(--space-3)}
+    .card{background:var(--surface); border:1px solid var(--border); border-radius:12px; overflow:hidden; box-shadow:var(--shadow-sm); transition:box-shadow .18s ease, transform .08s ease}
+    .card:hover{box-shadow:var(--shadow-md); transform:translateY(-1px)}
+    .media{aspect-ratio:16/10; display:grid; place-items:center; background:color-mix(in oklab, var(--surface) 90%, var(--bg) 10%); border-bottom:1px solid var(--border); position:relative}
+    .media img, .media video{max-width:92%; max-height:92%; object-fit:contain; border-radius:8px}
+    .zoom{position:absolute; bottom:10px; right:10px; padding:6px 8px; font-size:12px; border:1px solid var(--border); background:rgba(255,255,255,.8); backdrop-filter:saturate(1.2) blur(2px); border-radius:999px; cursor:pointer}
+    .meta{padding:12px}
+    .title-sm{font-weight:750; font-size:14px}
+    .caption{margin-top:6px; font-size:12.5px; color:var(--muted)}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
+
+    /* Lightbox */
+    .lightbox{position:fixed; inset:0; background:rgba(2,6,23,.62); display:none; align-items:center; justify-content:center; z-index:60}
+    .lightbox img, .lightbox video{max-width:92vw; max-height:88vh; border-radius:12px; border:2px solid #fff; box-shadow:0 18px 48px rgba(2,6,23,.45)}
+
+    /* Utilities */
+    .pill{display:inline-flex; align-items:center; gap:6px; padding:4px 10px; border:1px solid var(--border); border-radius:999px; background:var(--surface); color:var(--ink); font-size:12px}
+    .sr-only{position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0}
+    .toolbar{display:flex; align-items:center; gap:10px}
+    .btn{display:inline-flex; align-items:center; gap:8px; padding:8px 12px; border:1px solid var(--border); background:var(--surface); color:var(--ink); border-radius:10px; box-shadow:var(--shadow-sm); cursor:pointer; font-weight:600}
+    .btn:hover{box-shadow:var(--shadow-md)}
+
+    @media (max-width:980px){ .shell{grid-template-columns:1fr} .side{position:static} }
+  </style>
+</head>
+<body>
+  <header class="site" aria-label="Page header">
+    <div class="head">
+      <div class="title">Digital Twin Use Cases</div>
+    </div>
+  </header>
+
+  <main class="shell" id="app">
+    <!-- Sidebar -->
+    <aside class="side" aria-label="Use cases">
+      <ul id="uc-list" class="usecase-list" role="tablist" aria-orientation="vertical"></ul>
+    </aside>
+
+    <!-- Main content -->
+    <div>
+      <section class="hero" aria-label="Use case hero">
+        <img id="hero-img" class="hero-img" src="" alt="" />
+      </section>
+
+      <div id="content"></div>
+    </div>
+  </main>
+
+  <!-- Lightbox -->
+  <div id="lightbox" class="lightbox" role="dialog" aria-modal="true" aria-label="Preview" onclick="closeLightbox(event)">
+    <img id="lightbox-img" alt="preview" />
+  </div>
+
+  <script>
+  // ======= Data =========
+  const DATA = [
+    {
+      id: 'vgr', name: 'Vacuum Gripper Robot', hero: 'img/VGR.png',
+      inputs: {
+        pt: [
+          { t: 'PT Structural Models', src: 'img/block.png' },
+          { t: 'PICK/PLACE Mission State Machine', src: 'img/mission.png' }
+        ],
+        dt: [
+          { t: 'Configuration Model', src: 'img/config.png' },
+          { t: 'Feature model', src: 'img/Feature-Model-VGR.png' }
+        ]
+      },
+      outputs: {
+        monitoring: [ { t: 'Real-time Monitoring w/ Grafana', src: 'img/grafana-dashboard.png' } ],
+        anomaly: [ { t: 'Anomaly Detection', type:'video', src:'recording.mp4', poster:'img/anomaly.png' }],
+        reconfig: [ { t: 'DT Reconfiguration UI w/ WebSocket Commands', src: 'img/seq-diag.png' } ],
+        digitalShadow: [ { t: 'Digital Shadow w/ InfluxDB', src: 'img/InfluxDB.png' } ],
+        internal: [ { t: 'Models in the DT', src: 'img/mission.png' } ]
+      }
+    },
+    {
+      id: 'conveyor', name: 'Conveyor Belt', hero: 'img/cb.png',
+      inputs: {
+        pt: [ { t: 'Conveyor States', src: 'https://placehold.co/1200x800?text=Conveyor+Statechart' } ],
+        dt: [ { t: 'Configuration Model', src: 'img/config-CB.png' },
+              { t: 'Feature model', src: 'img/feature-cb.png' }
+         ]
+      },
+      outputs: {
+        monitoring: [ { t: 'Real-time Monitoring w/ Grafana', src: 'img/grafana-CB.png' } ],
+        anomaly: [ { t: 'Anomaly Detection', src: 'https://placehold.co/1200x800?text=Anomaly' } ],
+        reconfig: [  ],
+        digitalShadow: [ { t: 'Digital Shadow ', src: 'img/ds-cb.png' } ],
+        internal: [ { t: 'Models in the DT', src: 'https://placehold.co/1200x800?text=Models' } ]
+      }
+    },
+    {
+      id: 'turbine', name: 'Steam Turbine', hero: 'https://placehold.co/1200x160?text=Steam+Turbine',
+      inputs: {
+        pt: [ { t: '', src: 'https://placehold.co/1200x800?text=Turbine+Statechart' } ],
+        dt: [ { t: 'Configuration file', src: 'https://placehold.co/1200x800?text=config.json+Turbine' } ]
+      },
+      outputs: {
+        monitoring: [ { t: 'Real-time Monitoring w/ Grafana', src: 'https://placehold.co/1200x800?text=Monitoring' } ],
+        anomaly: [ { t: 'Anomaly Detection', src: 'https://placehold.co/1200x800?text=Deviation' } ],
+        reconfig: [ { t: 'Reconfiguration', src: 'https://placehold.co/1200x800?text=Reconfiguration' } ],
+        digitalShadow: [ { t: 'Digital Shadow ', src: 'https://placehold.co/1200x800?text=Digital+Shadow' } ],
+        internal: [ { t: 'Models in the DT', src: 'https://placehold.co/1200x800?text=Models' } ]
+      }
+    },
+    {
+      id: 'home', name: 'Home Assistant', hero: 'img/home-assistant.jpg',
+      inputs: {
+        pt: [ 
+          { t: 'PT Structural Models', src: 'img/HA-BLOCK.png' },
+          { t: 'Automation Command Model', src: 'img/ha-model-in.png' }
+         ],
+        dt: [ { t: 'Configuration file', src: 'img/config-ha.png' },
+              { t: 'Feature model', src: 'img/Feature-Model-HA.png' }
+
+         ]
+      },
+      outputs: {
+        monitoring: [ { t: 'Real-time Monitoring w/ Grafana', src: 'img/dashboard-HA.png' } ],
+        anomaly: [ /* removed for Home in UI below */ ],
+        reconfig: [ { t: 'Reconfiguration w/ Triggers', src: 'https://placehold.co/1200x800?text=Automations+Triggers' } ],
+        digitalShadow: [ { t: 'Digital Shadow', src: 'img/ds-HA.png' } ],
+        internal: [ { t: 'Models in the DT', src: 'img/ha-model-in.png' } ]
+      }
+    }
+  ];
+
+  const DESCRIPTIONS = {
+     pt: "PT models describe the physical system itself, its structure and behaviour, thus serving as blueprints for building the PT.",
+    dt: "DT models describe the twin's architecture (data, models, services, connectivity).",
+    monitoring: "Monitoring auto-generates real-time dashboards of PT data.",
+    anomaly: "Anomaly detection compares live PT behaviour to modelled expectations and flags deviations.",
+    reconfig: "Reconfiguration issues corrective actions based on detected anomalies.",
+    digitalShadow: "The Digital Shadow keeps a time-stamped record of the PT's state for real-time and historical access.",
+    internal: "Models in the DT are runtime representations of the PT, used directly by services. In our case, we reuse models of the PT (behavioral or models that describe the commands the PT can issue)",
+    /* NEW: specific info bulle for HA reconfiguration */
+reconfigHA: "Here we show an example of a possible automation: when brightness is ≥ 42, the shutter closes, and when it’s ≤ 41, it opens. These thresholds can be adjusted accordingly."
+
+  };
+
+  // ======= Reconfiguration demo spec (your JSON rules) =======
+  const RECONF_SPEC = {
+    "channels": [
+      { "id": "mqtt-ha", "type": "mqtt", "broker": "tcp://localhost:1883", "clientId": "reconf_client" }
+    ],
+    "automations": [
+      {
+        "id": "close_shutter_high_lux",
+        "trigger": { "type": "stateChange", "entityId": "sensor.classroom.luminosity" },
+        "conditions": [ { "op": ">=", "left": "${to}", "right": 42 } ],
+        "actions": [
+          { "via": "mqtt-ha", "topic": "shutter/command", "payload": "CLOSE" },
+          { "via": "mqtt-ha", "topic": "dt/debug", "payload": "CLOSE fired at ${to}" }
+        ]
+      },
+      {
+        "id": "open_shutter_low_lux",
+        "trigger": { "type": "stateChange", "entityId": "sensor.classroom.luminosity" },
+        "conditions": [ { "op": "<=", "left": "${to}", "right": 41 } ],
+        "actions": [
+          { "via": "mqtt-ha", "topic": "shutter/command", "payload": "OPEN" },
+          { "via": "mqtt-ha", "topic": "dt/debug", "payload": "OPEN fired at ${to}" }
+        ]
+      }
+    ]
+  };
+
+  // ======= Helpers =========
+  const $ = sel => document.querySelector(sel);
+  const el = (t, cls) => { const n = document.createElement(t); if(cls) n.className = cls; return n; };
+  const OPS = {
+    ">=": (l,r) => Number(l) >= Number(r),
+    "<=": (l,r) => Number(l) <= Number(r),
+    ">":  (l,r) => Number(l) >  Number(r),
+    "<":  (l,r) => Number(l) <  Number(r),
+    "==": (l,r) => String(l) === String(r),
+    "eq": (l,r) => String(l) === String(r)
+  };
+  const tmpl = (s, ctx) => String(s).replace(/\$\{([^}]+)\}/g, (_,k)=> (ctx[k.trim()] ?? ""));
+
+  function openLightbox(src, isVideo=false, poster){
+    const lb = $('#lightbox');
+    lb.innerHTML = '';
+    const node = document.createElement(isVideo ? 'video' : 'img');
+    if(isVideo){ node.src = src; if(poster) node.poster = poster; node.controls = true; } else { node.src = src; node.alt = 'preview'; }
+    node.style.maxWidth = '92vw'; node.style.maxHeight = '88vh'; node.style.borderRadius = '12px';
+    lb.appendChild(node); lb.style.display = 'flex';
+  }
+  function closeLightbox(e){ if(e.target.id === 'lightbox') e.currentTarget.style.display='none'; }
+
+  // Info tooltip
+  function infoButton(key){
+    const btn = el('button','info-btn');
+    btn.type = 'button';
+    btn.setAttribute('aria-expanded','false');
+    btn.setAttribute('aria-controls', `tip-${key}`);
+    btn.innerHTML = `
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="9"></circle>
+        <line x1="12" y1="8" x2="12" y2="8"></line>
+        <path d="M10.8 12.2h1.2v3.6H12"></path>
+      </svg>
+      Info`;
+    const tip = el('div','tooltip'); tip.id = `tip-${key}`; tip.setAttribute('role','tooltip'); tip.setAttribute('aria-hidden','true');
+    const p = el('p'); p.textContent = DESCRIPTIONS[key] || 'No description provided yet.'; tip.appendChild(p);
+    btn.onclick = (e)=>{ e.stopPropagation(); const open = btn.getAttribute('aria-expanded')==='true'; btn.setAttribute('aria-expanded', String(!open)); tip.setAttribute('aria-hidden', String(open)); };
+    document.addEventListener('click', (evt)=>{ if (tip.getAttribute('aria-hidden')==='false' && !btn.contains(evt.target) && !tip.contains(evt.target)){ btn.setAttribute('aria-expanded','false'); tip.setAttribute('aria-hidden','true'); } });
+    document.addEventListener('keydown', (evt)=>{ if (evt.key==='Escape' && tip.getAttribute('aria-hidden')==='false'){ btn.setAttribute('aria-expanded','false'); tip.setAttribute('aria-hidden','true'); btn.focus(); } });
+    btn.appendChild(tip);
+    return btn;
+  }
+
+  // Figure card
+  function figureCard(item){
+    const card = el('div','card');
+    const media = el('div','media');
+    if(item.type==='video'){
+      const v = document.createElement('video'); v.src = item.src; if(item.poster) v.poster = item.poster; v.controls=true; v.preload='metadata'; media.appendChild(v);
+      const z = el('button','zoom'); z.textContent = 'Open'; z.onclick=()=> openLightbox(item.src,true,item.poster); media.appendChild(z);
+    } else {
+      const img = document.createElement('img'); img.src = item.src; img.alt = item.t; media.appendChild(img);
+      const z = el('button','zoom'); z.textContent = 'Open'; z.onclick=()=> openLightbox(item.src); media.appendChild(z);
+    }
+    const meta = el('div','meta');
+    const t = el('div','title-sm'); t.textContent = item.t; meta.appendChild(t);
+    const c = el('div','caption'); c.textContent = ''; meta.appendChild(c);
+    card.appendChild(media); card.appendChild(meta);
+    return card;
+  }
+
+  // Subsection block
+  function subsection(title, key, anchor){
+    const wrapper = document.createDocumentFragment();
+    const s = el('div','sub'); s.id = anchor;
+    const left = el('div','sub-left'); const h = el('h3'); h.textContent = title; left.appendChild(h); s.appendChild(left);
+    s.appendChild(infoButton(key));
+    wrapper.appendChild(s);
+    return wrapper;
+  }
+
+  // ----- Home Assistant — compact, illustrative reconfiguration widget -----
+  function reconfHAWidget(spec){
+    const wrap = document.createElement('div');
+    wrap.className = 'card';
+    wrap.innerHTML = `
+    <style>
+      #ha-reconf .row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+      #ha-reconf .mono{font-family:ui-monospace,Menlo,Consolas,monospace}
+      #ha-reconf .pill{display:inline-flex;gap:6px;align-items:center;border:1px solid #e2e8f0;border-radius:999px;padding:6px 12px;background:#fff;font-size:12px}
+      #ha-reconf .grid2{display:grid;grid-template-columns:1.1fr .9fr;gap:14px;margin-top:12px}
+      #ha-reconf .card{border:1px solid #e2e8f0;border-radius:12px;padding:12px}
+      #ha-reconf .title-sm{font-weight:700;font-size:13px;margin-bottom:8px;color:#334155}
+      #ha-reconf .window{
+        position:relative;
+        aspect-ratio:4/3;
+        border-radius:12px;
+        overflow:hidden;
+        background:#dbeafe;          /* baby blue base */
+      }
+      /* ensure the curtain sits above only when closed */
+      #ha-reconf .curtain{
+        position:absolute;
+        inset:0;
+        z-index:1;                   /* curtain layer */
+        background:
+          repeating-linear-gradient(
+            to bottom,
+            rgba(15,23,42,.92) 0px,
+            rgba(15,23,42,.92) 22px,
+            rgba(255,255,255,.08) 22px,
+            rgba(255,255,255,.08) 24px
+          );
+        transform:translateY(0%);
+        transition:transform .6s cubic-bezier(.3,.7,.2,1);
+        box-shadow:0 -8px 18px rgba(2,6,23,.35) inset;
+      }
+      /* slide away when open */
+      #ha-reconf .shutter.open .curtain{ transform:translateY(-100%); }
+      /* move the badge above everything */
+      #ha-reconf .badge{
+        position:absolute; top:8px; left:8px; z-index:2; font-size:12px;
+        border-radius:8px; padding:4px 8px; background:#fff; border:1px solid #e2e8f0;
+      }
+      /* Shutter visualization */
+      #ha-reconf .shutter.open{ background:#dbeafe; transition:background .4s ease; }
+      #ha-reconf .shutter.closed{ background:#0f172a; transition:background .4s ease; }
+      #ha-reconf .blind{
+        position:absolute;left:0;right:0;height:12.5%;
+        background:rgba(15,23,42,.9);
+        border-bottom:1px solid rgba(255,255,255,.06);
+        transition:opacity .4s ease;
+      }
+      /* fully hide blinds when open */
+      #ha-reconf .shutter.open .blind{ opacity:0; }
+      #ha-reconf .shutter.closed .blind{ opacity:1; }
+
+      #ha-reconf .status{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 10px;font-size:12px;border:1px solid}
+      #ha-reconf .ok{background:#ecfdf5;border-color:#a7f3d0;color:#065f46}
+      #ha-reconf .no{background:#fef2f2;border-color:#fecaca;color:#7f1d1d}
+      #ha-reconf .timeline{display:flex;flex-direction:column;gap:6px;max-height:240px;overflow:auto}
+      #ha-reconf .tick{border:1px solid #e2e8f0;border-radius:10px;padding:6px 10px;background:#f8fafc;font-size:12px}
+      @media (max-width:780px){ #ha-reconf .grid2{grid-template-columns:1fr} }
+    </style>
+
+    <div id="ha-reconf">
+      <div class="meta">
+        <div class="title-sm">Reconfiguration — Luminosity → Shutter</div>
+        <div class="row" style="margin:8px 0 4px">
+          <div class="pill">Automation: <code class="mono">&ge; 42 → CLOSE</code>, <code class="mono">&le; 41 → OPEN</code></div>
+          <div class="pill">Prev: <code id="ha-prev" class="mono">—</code></div>
+          <div class="pill">Current: <code id="ha-cur" class="mono">—</code></div>
+          <input id="ha-slider" type="range" min="0" max="400" step="1" value="55" style="width:260px"/>
+          <button id="ha-rand" class="pill" style="cursor:pointer">Random</button>
+          <button id="ha-reset" class="pill" style="cursor:pointer">Reset</button>
+        </div>
+      </div>
+
+      <div class="grid2">
+        <!-- LEFT: HA-like shutter -->
+        <div class="card">
+          <div class="title-sm">Roller Shutter</div>
+          <div id="ha-window" class="window shutter open" aria-live="polite">
+            <div class="badge">State: <strong id="ha-state">OPEN</strong></div>
+            <div class="curtain" aria-hidden="true"></div>
+          </div>
+
+          <div class="row" style="margin-top:10px">
+            <button id="ha-open" class="pill" title="Open">Open</button>
+            <button id="ha-stop" class="pill" title="Stop">Stop</button>
+            <button id="ha-close" class="pill" title="Close">Close</button>
+          </div>
+        </div>
+
+        <!-- RIGHT: rules & timeline -->
+        <div class="card">
+          <div class="title-sm">Automation status</div>
+          <div class="row" style="margin-bottom:8px">
+            <span>close_shutter_high_lux</span>
+            <span id="ha-st-close" class="status no">no match</span>
+          </div>
+          <div class="row" style="margin-bottom:12px">
+            <span>open_shutter_low_lux</span>
+            <span id="ha-st-open" class="status no">no match</span>
+          </div>
+
+          <div class="title-sm">Last actions</div>
+          <div id="ha-timeline" class="timeline" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+  `;
+
+    // wiring
+    const $w = s => wrap.querySelector(s);
+    const slider = $w('#ha-slider'), prevEl = $w('#ha-prev'), curEl = $w('#ha-cur');
+    const win = $w('#ha-window'), stateEl = $w('#ha-state');
+    const stClose = $w('#ha-st-close'), stOpen = $w('#ha-st-open');
+    const tl = $w('#ha-timeline');
+
+    let prev = null;
+    const push = txt => {
+      const div = document.createElement('div');
+      div.className = 'tick';
+      div.innerHTML = `<strong>${new Date().toLocaleTimeString()}</strong> — <code class="mono">${txt}</code>`;
+      tl.prepend(div);
+      while (tl.children.length > 8) tl.removeChild(tl.lastChild);
+    };
+    const setBadge = (el, ok) => { el.textContent = ok ? 'match' : 'no match'; el.className = 'status ' + (ok ? 'ok' : 'no'); };
+    const applyShutter = (close) => {
+      if (close){ win.classList.remove('open'); win.classList.add('closed'); stateEl.textContent = 'CLOSE'; }
+      else { win.classList.remove('closed'); win.classList.add('open'); stateEl.textContent = 'OPEN'; }
+    };
+
+    function handleChange(to){
+      prevEl.textContent = prev === null ? '—' : prev;
+      curEl.textContent = to;
+
+      const closeMatch = (to >= 42);
+      const openMatch  = (to <= 41);
+      setBadge(stClose, closeMatch);
+      setBadge(stOpen,  openMatch);
+
+      // publish simulated actions (illustrative)
+      if (closeMatch){ applyShutter(true);  push(`shutter/command ← CLOSE (to=${to})`); }
+      else if (openMatch){ applyShutter(false); push(`shutter/command ← OPEN (to=${to})`); }
+
+      prev = to;
+    }
+
+    slider.addEventListener('input', ()=> handleChange(Number(slider.value)));
+    $w('#ha-rand').addEventListener('click', ()=>{ const v = Math.floor(Math.random()*401); slider.value=v; handleChange(v); });
+    $w('#ha-reset').addEventListener('click', ()=>{ prev=null; slider.value=55; prevEl.textContent='—'; curEl.textContent='—'; setBadge(stClose,false); setBadge(stOpen,false); applyShutter(false); tl.innerHTML=''; });
+
+    // manual buttons (illustrative only)
+    $w('#ha-open').addEventListener('click', ()=>{ applyShutter(false); push('manual ← OPEN'); });
+    $w('#ha-close').addEventListener('click', ()=>{ applyShutter(true);  push('manual ← CLOSE'); });
+    $w('#ha-stop').addEventListener('click', ()=>{ push('manual ← STOP'); });
+
+    handleChange(Number(slider.value));
+    return wrap;
+  }
+
+  // ----- Reconfiguration Visual (legacy demo, not used for HA now) -----
+  function reconfVisual(){ /* retained if needed later; not invoked for HA */ }
+
+  // Render use case body
+  function renderUseCase(uc){
+    // hero (image only)
+    const hero = $('#hero-img'); hero.src = uc.hero; hero.alt = uc.name;
+
+    const root = $('#content'); root.innerHTML = '';
+
+    // Inputs
+    const inputs = el('section','section');
+    const ih = el('div','section-header'); ih.innerHTML = `<h2><a id="inputs" href="#inputs">Inputs</a></h2>`; inputs.appendChild(ih);
+    inputs.appendChild(subsection('Models of the Physical Twin (PT)','pt','inputs-pt'));
+    let grid = el('div','grid'); uc.inputs.pt.forEach(item=> grid.appendChild(figureCard(item))); inputs.appendChild(grid);
+    inputs.appendChild(subsection('Models of the Digital Twin (DT)','dt','inputs-dt'));
+    grid = el('div','grid'); uc.inputs.dt.forEach(item=> grid.appendChild(figureCard(item))); inputs.appendChild(grid);
+    root.appendChild(inputs);
+
+    // Outputs
+    const outputs = el('section','section');
+    const oh = el('div','section-header'); oh.innerHTML = `<h2><a id="outputs" href="#outputs">Outputs</a></h2>`; outputs.appendChild(oh);
+
+    outputs.appendChild(subsection('Monitoring Service','monitoring','out-monitoring'));
+    grid = el('div','grid'); uc.outputs.monitoring.forEach(item=> grid.appendChild(figureCard(item))); outputs.appendChild(grid);
+
+    // Anomaly Detection — show for all EXCEPT Home Assistant
+    if (uc.id !== 'home') {
+      outputs.appendChild(subsection('Anomaly Detection','anomaly','out-anomaly'));
+      grid = el('div','grid'); uc.outputs.anomaly.forEach(item=> grid.appendChild(figureCard(item))); outputs.appendChild(grid);
+    }
+
+   // Reconfiguration (WITH HA-specific info bulle)
+const reconfInfoKey = (uc.id === 'home') ? 'reconfigHA' : 'reconfig';
+outputs.appendChild(subsection('Reconfiguration', reconfInfoKey, 'out-reconfig'));
+
+if (uc.id === 'home') {
+  // Only the interactive widget for Home
+  const demoWrap = el('div','grid');
+  demoWrap.appendChild(reconfHAWidget(RECONF_SPEC));
+  outputs.appendChild(demoWrap);
+} else {
+  // Other use cases keep their figure cards
+  let grid = el('div','grid');
+  uc.outputs.reconfig.forEach(item=> grid.appendChild(figureCard(item)));
+  outputs.appendChild(grid);
+}
+
+    outputs.appendChild(subsection('Digital Shadow','digitalShadow','out-ds'));
+    grid = el('div','grid'); uc.outputs.digitalShadow.forEach(item=> grid.appendChild(figureCard(item))); outputs.appendChild(grid);
+
+    outputs.appendChild(subsection('Models in the DT','internal','out-internal'));
+    grid = el('div','grid'); uc.outputs.internal.forEach(item=> grid.appendChild(figureCard(item))); outputs.appendChild(grid);
+
+    root.appendChild(outputs);
+
+    // Number captions sequentially within page
+    let n = 1; root.querySelectorAll('.caption').forEach(cap=>{ cap.textContent = `Figure ${n++}.`; });
+  }
+
+  // Sidebar list
+  function renderSidebar(activeId){
+    const list = $('#uc-list'); list.innerHTML='';
+    DATA.forEach(uc=>{
+      const li = el('li','usecase-item');
+      const b = document.createElement('button'); b.className='usecase-btn'; b.type='button'; b.setAttribute('role','tab'); b.setAttribute('aria-selected', uc.id===activeId ? 'true':'false'); b.setAttribute('aria-current', uc.id===activeId ? 'true':'false'); b.onclick = ()=> selectUC(uc.id);
+      b.innerHTML = `<span class="dot" aria-hidden="true"></span><span>${uc.name}</span>`;
+      li.appendChild(b); list.appendChild(li);
+    });
+  }
+
+  // State + URL sync
+  const state = { active: (new URLSearchParams(location.search)).get('uc') || DATA[0].id, compact:false };
+  function selectUC(id){ state.active = id; const qp = new URLSearchParams(location.search); qp.set('uc', id); history.replaceState(null, '', `${location.pathname}?${qp.toString()}`); boot(); window.scrollTo({top:0, behavior:'smooth'}); }
+
+  // Boot
+  function boot(){
+    const uc = DATA.find(u=>u.id===state.active) || DATA[0];
+    renderSidebar(uc.id); renderUseCase(uc);
+  }
+  boot();
+
+  // Compact grid toggle (guarded)
+  (function attachCompactToggle(){
+    const t = document.getElementById('toggle-compact');
+    if(!t) return;
+    t.addEventListener('click', ()=>{
+      state.compact = !state.compact;
+      document.querySelectorAll('.grid').forEach(g=> g.style.gap = state.compact ? '8px' : '14px');
+      document.querySelectorAll('.card .meta').forEach(m=> m.style.padding = state.compact ? '8px' : '12px');
+    });
+  })();
+
+  // Basic schema self-check
+  (function runSelfTests(){
+    const reqOut = ['monitoring','anomaly','reconfig','digitalShadow','internal'];
+    let failed = 0;
+    if (DATA.length !== 4) failed++;
+    DATA.forEach(uc=>{
+      if(!uc.inputs || !Array.isArray(uc.inputs.pt) || !Array.isArray(uc.inputs.dt)) failed++;
+      reqOut.forEach(k=>{ if(!uc.outputs || !Array.isArray(uc.outputs[k])) failed++; });
+    });
+    if (failed) console.warn('Self-tests failed:', failed); else console.log('Self-tests passed ✓');
+  })();
+  </script>
+</body>
 </html>
