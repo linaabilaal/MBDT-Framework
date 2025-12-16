@@ -11,11 +11,12 @@
       --shadow-sm:0 1px 2px rgba(2,6,23,.06); --shadow-md:0 10px 30px rgba(2,6,23,.08);
       --radius:14px; --radius-lg:16px; --container:1200px;
       --space-1:6px; --space-2:10px; --space-3:14px; --space-4:18px; --space-5:22px;
+      font-family:Georgia, serif;
     }
     *{box-sizing:border-box}
     html,body{height:100%}
-    body{margin:0; font-family:ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; color:var(--ink); background:var(--bg); -webkit-font-smoothing:antialiased}
-    h1,h2,h3{margin:0; letter-spacing:-.01em}
+    body{margin:0; font-family:Georgia, serif; color:var(--ink); background:var(--bg); -webkit-font-smoothing:antialiased}
+    h1,h2,h3{margin:0; font-family:Georgia, serif; letter-spacing:-.01em}
     h1{font-weight:800; font-size:clamp(22px,3.2vw,28px)}
     h2{font-weight:750; font-size:18px}
     h3{font-weight:700; font-size:15px}
@@ -26,15 +27,15 @@
     .shell{max-width:var(--container); margin:0 auto; display:grid; grid-template-columns:280px 1fr; gap:var(--space-4); padding:var(--space-4)}
     header.site{position:sticky; top:0; z-index:50; backdrop-filter:blur(6px); background:color-mix(in oklab, var(--surface) 92%, transparent); border-bottom:1px solid var(--border)}
     .head{max-width:var(--container); margin:0 auto; padding:var(--space-3) var(--space-4)}
-    .title{font-weight:800; font-size:clamp(20px,3vw,26px)}
+    .title{font-weight:800; font-size:clamp(20px,3vw,26px); font-family:Georgia, serif;}
 
     /* Sidebar (vertical tabs) */
     .side{position:sticky; top:88px; align-self:start; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); box-shadow:var(--shadow-sm)}
-    .usecase-list{list-style:none; padding:8px; margin:0}
+    .usecase-list{list-style:none; padding:8px; margin:0; font-family:Georgia, serif;}
     .usecase-item{margin:4px 0}
-    .usecase-btn{width:100%; display:flex; align-items:center; gap:10px; padding:10px 12px; border:1px solid transparent; background:transparent; color:var(--ink); border-radius:10px; cursor:pointer; font-weight:700}
+    .usecase-btn{font-family:Georgia, serif;width:100%; display:flex; align-items:center; gap:10px; padding:10px 12px; border:1px solid transparent; background:transparent; color:var(--ink); border-radius:10px; cursor:pointer; font-weight:700}
     .usecase-btn:hover{background:color-mix(in oklab, var(--surface) 90%, var(--bg) 10%)}
-    .usecase-btn[aria-current="true"]{background:var(--surface); border-color:color-mix(in oklab, var(--border) 60%, var(--accent) 40%); box-shadow:var(--shadow-sm)}
+    .usecase-btn[aria-current="true"]{font-family:Georgia, serif;background:var(--surface); border-color:color-mix(in oklab, var(--border) 60%, var(--accent) 40%); box-shadow:var(--shadow-sm)}
     .dot{width:8px; height:8px; border-radius:999px; background:var(--accent)}
 
     /* Hero banner */
@@ -70,7 +71,7 @@
     .meta{padding:12px}
     .title-sm{font-weight:750; font-size:14px}
     .caption{margin-top:6px; font-size:12.5px; color:var(--muted)}
-    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
+    .mono{font-family:Georgia, serif;}
 
     /* Lightbox */
     .lightbox{position:fixed; inset:0; background:rgba(2,6,23,.62); display:none; align-items:center; justify-content:center; z-index:60}
@@ -142,7 +143,7 @@
       },
       outputs: {
         monitoring: [ { t: 'Real-time Monitoring w/ Grafana', src: 'img/CB/CB-MonitoringUI.png' } ],
-           anomaly: [  ],
+        anomaly: [  ],
         cockpit: [
           { t: 'Cockpit UI', src: 'img/CB/CB-CockpitUI.png' }
         ],
@@ -154,18 +155,19 @@
       id: 'turbine', name: 'Steam Turbine', hero: 'img/SM/SM.jpeg',
       inputs: {
         pt: [ { t: 'PT Structural Models', src: 'https://placehold.co/1200x800?text=Turbine+PT+Model' } ],
-        dt: [ { t: 'Configuration file', src: 'img/SM/SM-ConfigUI.png' },
-          { t: 'Feature model', src: 'img/SM/SM-FM.png' } ]
+        dt: [
+          { t: 'Configuration file', src: 'img/SM/SM-ConfigUI.png' },
+          { t: 'Feature model', src: 'img/SM/SM-FM.png' }
+        ]
       },
       outputs: {
         monitoring: [ { t: 'Real-time Monitoring w/ Grafana', src: 'https://placehold.co/1200x800?text=Monitoring' } ],
-        anomaly: [ { t: 'Anomaly Detection', src: 'https://placehold.co/1200x800?text=Deviation' } ],
+        anomaly: [ ],
         cockpit: [
-          // TODO: replace with your real cockpit screenshot(s)
-          { t: 'Cockpit UI (commands & actions)', src: 'https://placehold.co/1200x800?text=Cockpit' }
+          { t: 'Cockpit UI', src: 'https://placehold.co/1200x800?text=Cockpit' }
         ],
         digitalShadow: [ { t: 'Digital Shadow', src: 'https://placehold.co/1200x800?text=Digital+Shadow' } ],
-        internal: [ { t: 'Models in the DT', src: 'https://placehold.co/1200x800?text=Models' } ]
+        internal: [  ]
       }
     },
     {
@@ -286,11 +288,12 @@
     const outputs = el('section','section');
     const oh = el('div','section-header'); oh.innerHTML = `<h2><a id="outputs" href="#outputs">Outputs</a></h2>`; outputs.appendChild(oh);
 
+    // Monitoring
     outputs.appendChild(subsection('Monitoring Service','monitoring','out-monitoring'));
     grid = el('div','grid'); uc.outputs.monitoring.forEach(item=> grid.appendChild(figureCard(item))); outputs.appendChild(grid);
 
-    // Anomaly Detection — show for all EXCEPT Home Assistant
-    if (uc.id !== 'home') {
+    // Anomaly Detection — ONLY for VGR
+    if (uc.id === 'vgr') {
       outputs.appendChild(subsection('Anomaly Detection','anomaly','out-anomaly'));
       grid = el('div','grid'); uc.outputs.anomaly.forEach(item=> grid.appendChild(figureCard(item))); outputs.appendChild(grid);
     }
@@ -299,11 +302,15 @@
     outputs.appendChild(subsection('Cockpit','cockpit','out-cockpit'));
     grid = el('div','grid'); uc.outputs.cockpit.forEach(item=> grid.appendChild(figureCard(item))); outputs.appendChild(grid);
 
+    // Digital Shadow
     outputs.appendChild(subsection('Digital Shadow','digitalShadow','out-ds'));
     grid = el('div','grid'); uc.outputs.digitalShadow.forEach(item=> grid.appendChild(figureCard(item))); outputs.appendChild(grid);
 
-    outputs.appendChild(subsection('Models in the DT','internal','out-internal'));
-    grid = el('div','grid'); uc.outputs.internal.forEach(item=> grid.appendChild(figureCard(item))); outputs.appendChild(grid);
+    // Models in the DT — ONLY for VGR
+    if (uc.id === 'vgr') {
+      outputs.appendChild(subsection('Models in the DT','internal','out-internal'));
+      grid = el('div','grid'); uc.outputs.internal.forEach(item=> grid.appendChild(figureCard(item))); outputs.appendChild(grid);
+    }
 
     root.appendChild(outputs);
 
